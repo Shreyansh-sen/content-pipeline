@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JPG Image Uploader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #f8f9ff;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background-color: #f0f2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background-color: #e8ebff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .upload-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .view-files-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .view-files-btn:hover {
+            background: #f8f9ff;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .file-list {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+
+        .file-list h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .files {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            background: #f8f9ff;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+            word-break: break-word;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .file-item:hover {
+            background: #e8ebff;
+            border-color: #667eea;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Tab Styles */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #666;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn:hover {
+            color: #667eea;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        /* Analysis Section */
+        .analysis-section {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 2px solid #eee;
+        }
+
+        .analysis-section h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+        .result-box {
+            background: #f8f9ff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .result-header {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-text {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+            color: #333;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Video Section */
+        .video-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            border: 2px solid #667eea;
+        }
+
+        .video-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .generate-video-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .generate-video-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .generate-video-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .video-container {
+            margin-top: 30px;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            display: none;
+        }
+
+        .video-container.active {
+            display: block;
+        }
+
+        .video-player {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 8px;
+            background: #000;
+            aspect-ratio: 16 / 9;
+        }
+
+        .video-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-left: 4px solid #28a745;
+            border-radius: 4px;
+            color: #2e7d32;
+        }
+
+        .video-error {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ffebee;
+            border-left: 4px solid #c62828;
+            border-radius: 4px;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Divine Prompt Generator</h1>
+        <p class="subtitle">Upload Hindu deity images to generate AI prompts</p>
+
+        <form id="uploadForm">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">⬆️</div>
+                <div class="upload-text">Drag and drop your deity image here</div>
+                <div class="upload-hint">or click to select a JPG file (Max 16MB)</div>
+                <input type="file" id="fileInput" accept=".jpg,.jpeg" name="file">
+            </div>
+        </form>
+
+        <div class="message" id="message"></div>
+
+        <div class="button-group">
+            <button class="upload-btn" id="analyzeBtn">📊 Analyze & Generate Prompts</button>
+            <button type="button" class="view-files-btn" id="viewFilesBtn">View Uploaded Files</button>
+        </div>
+
+        <!-- Analysis Results Section -->
+        <div class="analysis-section" id="analysisSection" style="display: none;">
+            <h2>📝 Generated Prompts</h2>
+            
+            <!-- Analysis Tab -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="analysis">Analysis</button>
+                <button class="tab-btn" data-tab="image-prompt">Image Prompt</button>
+                <button class="tab-btn" data-tab="animation-prompt">Animation Prompt</button>
+            </div>
+
+            <!-- Analysis Content -->
+            <div class="tab-content" id="analysis">
+                <div class="result-box">
+                    <div class="result-header">Image Analysis</div>
+                    <pre id="analysisText" class="result-text"></pre>
+                    <button class="copy-btn" data-content="analysis">Copy Analysis</button>
+                </div>
+            </div>
+
+            <!-- Image Prompt Content -->
+            <div class="tab-content" id="image-prompt" style="display: none;">
+                <div class="result-box">
+                    <div class="result-header">Image Generation Prompt (Ready to Paste)</div>
+                    <pre id="imagePromptText" class="result-text"></pre>
+                    <button class="copy-btn" data-content="imagePrompt">Copy Prompt</button>
+                </div>
+            </div>
+
+            <!-- Animation Prompt Content -->
+            <div class="tab-content" id="animation-prompt" style="display: none;">
+                <div class="result-box">
+                    <div class="result-header">Video Animation Prompt (For Veo 3.1)</div>
+                    <pre id="animationPromptText" class="result-text"></pre>
+                    <button class="copy-btn" data-content="animationPrompt">Copy Prompt</button>
+                </div>
+            </div>
+
+            <!-- Video Generation Section -->
+            <div class="video-section">
+                <h3>🎬 Generate Video with Veo 3.1</h3>
+                <p style="color: #666; margin-bottom: 20px;">Generate a divine animated video based on the analysis and animation prompt above.</p>
+                <button class="generate-video-btn" id="generateVideoBtn">🎥 Generate Video (10 seconds)</button>
+                
+                <!-- Video Display -->
+                <div class="video-container" id="videoContainer">
+                    <div id="videoInfo" class="video-info"></div>
+                    <div id="videoError" class="video-error" style="display: none;"></div>
+                    <video id="videoPlayer" class="video-player" controls></video>
+                </div>
+            </div>
+        </div>
+
+        <div class="file-list" id="fileListContainer" style="display: none;">
+            <h2>Uploaded Images</h2>
+            <div class="files" id="filesList"></div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const viewFilesBtn = document.getElementById('viewFilesBtn');
+        const message = document.getElementById('message');
+        const fileListContainer = document.getElementById('fileListContainer');
+        const filesList = document.getElementById('filesList');
+        const analysisSection = document.getElementById('analysisSection');
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const copyBtns = document.querySelectorAll('.copy-btn');
+
+        let selectedFile = null;
+        let analysisData = {};
+        let currentFilename = null;
+
+        // Click to select file
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // File selection
+        fileInput.addEventListener('change', (e) => {
+            selectedFile = e.target.files[0];
+            if (selectedFile) {
+                uploadArea.style.borderColor = '#667eea';
+                uploadArea.style.backgroundColor = '#f0f2ff';
+            }
+        });
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                selectedFile = files[0];
+                fileInput.files = files;
+            }
+        });
+
+        // Analyze image and generate prompts
+        analyzeBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+
+            if (!selectedFile) {
+                showMessage('Please select a file', 'error');
+                return;
+            }
+
+            // Validate file type
+            if (!selectedFile.type.includes('image/jpeg')) {
+                showMessage('Please upload a JPG/JPEG file', 'error');
+                return;
+            }
+
+            // Validate file size
+            if (selectedFile.size > 16 * 1024 * 1024) {
+                showMessage('File size must be less than 16MB', 'error');
+                return;
+            }
+
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<span class="spinner"></span>Analyzing with GPT-4O mini...';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    analysisData = {
+                        analysis: data.analysis,
+                        imagePrompt: data.image_prompt,
+                        animationPrompt: data.animation_prompt
+                    };
+
+                    // Storefilename for video generation
+                    currentFilename = data.filename;
+
+                    // Display results
+                    document.getElementById('analysisText').textContent = data.analysis;
+                    document.getElementById('imagePromptText').textContent = data.image_prompt;
+                    document.getElementById('animationPromptText').textContent = data.animation_prompt;
+
+                    analysisSection.style.display = 'block';
+                    showMessage(`✓ Image analyzed successfully! ${data.filename}`, 'success');
+                    
+                    fileInput.value = '';
+                    selectedFile = null;
+                    uploadArea.style.borderColor = '#667eea';
+                    uploadArea.style.backgroundColor = '#f8f9ff';
+                } else {
+                    showMessage(`✗ ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`✗ Analysis failed: ${error.message}`, 'error');
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '📊 Analyze & Generate Prompts';
+            }
+        });
+
+        // Generate Video Button
+        const generateVideoBtn = document.getElementById('generateVideoBtn');
+        const videoContainer = document.getElementById('videoContainer');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const videoInfo = document.getElementById('videoInfo');
+        const videoError = document.getElementById('videoError');
+
+        generateVideoBtn.addEventListener('click', async () => {
+            if (!analysisData.animationPrompt) {
+                showMessage('Please analyze an image first', 'error');
+                return;
+            }
+
+            generateVideoBtn.disabled = true;
+            generateVideoBtn.innerHTML = '<span class="spinner"></span>Generating video with Veo 3.1...';
+
+            try {
+                const response = await fetch('/generate-video', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        animation_prompt: analysisData.animationPrompt,
+                        filename: currentFilename
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.video && data.video.success) {
+                    const video = data.video;
+                    
+                    // Display video info
+                    videoInfo.innerHTML = `
+                        <strong>✓ Video Generated Successfully!</strong><br>
+                        Duration: ${video.duration} seconds<br>
+                        Status: ${video.status}<br>
+                        ${video.video_url ? `<a href="${video.video_url}" target="_blank">Download Video</a>` : ''}
+                    `;
+                    videoInfo.style.display = 'block';
+                    videoError.style.display = 'none';
+
+                    // Try to load video if URL is available
+                    if (video.video_uri) {
+                        videoPlayer.src = video.video_uri;
+                        videoContainer.classList.add('active');
+                    } else if (video.video_url) {
+                        videoPlayer.src = video.video_url;
+                        videoContainer.classList.add('active');
+                    } else {
+                        videoContainer.classList.add('active');
+                        videoError.innerHTML = 'Video generated but URL not available. Check console for details.';
+                        videoError.style.display = 'block';
+                    }
+
+                    showMessage('✓ Video generated successfully!', 'success');
+                } else {
+                    const errorMsg = data.error || 'Unknown error';
+                    videoError.innerHTML = `<strong>Error:</strong> ${errorMsg}`;
+                    videoError.style.display = 'block';
+                    videoInfo.style.display = 'none';
+                    videoContainer.classList.add('active');
+                    showMessage(`✗ Video generation failed: ${errorMsg}`, 'error');
+                }
+            } catch (error) {
+                videoError.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                videoError.style.display = 'block';
+                videoInfo.style.display = 'none';
+                videoContainer.classList.add('active');
+                showMessage(`✗ Video generation failed: ${error.message}`, 'error');
+            } finally {
+                generateVideoBtn.disabled = false;
+                generateVideoBtn.innerHTML = '🎥 Generate Video (10 seconds)';
+            }
+        });
+
+        // Tab switching
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons
+                tabBtns.forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                btn.classList.add('active');
+
+                // Hide all tab contents
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                // Show selected tab content
+                document.getElementById(btn.dataset.tab).style.display = 'block';
+            });
+        });
+
+        // Copy to clipboard
+        copyBtns.forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const contentType = btn.dataset.content;
+                let textToCopy = '';
+
+                if (contentType === 'analysis') {
+                    textToCopy = analysisData.analysis;
+                } else if (contentType === 'imagePrompt') {
+                    textToCopy = analysisData.imagePrompt;
+                } else if (contentType === 'animationPrompt') {
+                    textToCopy = analysisData.animationPrompt;
+                }
+
+                try {
+                    await navigator.clipboard.writeText(textToCopy);
+                    const originalText = btn.textContent;
+                    btn.textContent = '✓ Copied!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                } catch (error) {
+                    showMessage('Failed to copy to clipboard', 'error');
+                }
+            });
+        });
+
+        // View uploaded files
+        viewFilesBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/files');
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.files.length === 0) {
+                        filesList.innerHTML = '<p style="grid-column: 1/-1; color: #999;">No files uploaded yet</p>';
+                    } else {
+                        filesList.innerHTML = data.files
+                            .map(file => `<div class="file-item">📄 ${file}</div>`)
+                            .join('');
+                    }
+                    fileListContainer.style.display = 'block';
+                } else {
+                    showMessage('Failed to load files', 'error');
+                }
+            } catch (error) {
+                showMessage(`Error: ${error.message}`, 'error');
+            }
+        });
+
+        // Show message
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.style.display = 'block';
+
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
