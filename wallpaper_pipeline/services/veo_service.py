@@ -63,8 +63,8 @@ class VeoService:
             
             # Define output paths
             output_filename = f"gen_video_{int(time.time())}.mp4"
-            output_path = os.path.join(Config.UPLOAD_FOLDER, output_filename)
-            os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
+            output_path = os.path.join(Config.GENERATED_VIDEO_FOLDER, output_filename)
+            os.makedirs(Config.GENERATED_VIDEO_FOLDER, exist_ok=True)
             
             # Download and save the video
             # Note: The SDK download method prepares the file, .save() writes it to disk
@@ -75,7 +75,8 @@ class VeoService:
             
             return {
                 "success": True,
-                "video_url": f"/{output_path}",
+                "video_url": f"/generated-videos/{output_filename}",
+                "video_path": output_path,
                 "status": "completed",
                 "duration": duration,
                 "has_audio": False,

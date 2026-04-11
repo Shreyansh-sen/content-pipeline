@@ -6,6 +6,12 @@ load_dotenv()
 
 class Config:
     """Configuration class for the application"""
+
+    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    WORKSPACE_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
+    SHARED_OUTPUT_FOLDER = os.path.join(WORKSPACE_ROOT, "shared_outputs")
+    GENERATED_VIDEO_FOLDER = os.path.join(SHARED_OUTPUT_FOLDER, "generated_videos")
+    BATCH_SOURCE_FOLDER = os.path.join(SHARED_OUTPUT_FOLDER, "pinterest_sources")
     
     # Flask Configuration
     DEBUG = True
