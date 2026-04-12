@@ -3,16 +3,3 @@ Werkzeug==2.3.7
 python-dotenv==1.0.0
 requests==2.31.0
 google-genai==1.13.0
-
-
-
-curl --location 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent' \
---header 'x-goog-api-key: AIzaSyBkoDXDEboirY3W5_YZhzR9TEoQYexII58' \
---header 'Content-Type: application/json' \
---data '{
-    "contents": [{
-      "parts": [
-        {"text": "Create a picture of a nano banana dish in a fancy restaurant with a Gemini theme"}
-      ]
-    }]
-  }'
