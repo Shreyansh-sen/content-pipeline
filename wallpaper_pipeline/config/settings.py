@@ -44,8 +44,3 @@ class Config:
     POCKETBASE_ADMIN_TOKEN = os.getenv('POCKETBASE_ADMIN_TOKEN')
     POCKETBASE_COLLECTION = os.getenv('POCKETBASE_COLLECTION', 'mantra_god_usecase_mappings')
     
-    # Hume AI Configuration (for video & live image generation)
-    HUME_APIKEY = os.getenv('HUME_APIKEY', '4a3c0504-b5ef-4f20-a0ba-f226dec9d81f')
-    HUME_APISECRET = os.getenv('HUME_APISECRET', '82f56a795639af09fca329c3394d90acdddc291c2a96d60b5896a676692e937e')
-    HUME_API_ENDPOINT = os.getenv('HUME_API_ENDPOINT', 'https://api.hume.ai/v0')
-    VIDEO_DURATION = 10  # seconds, no sound
