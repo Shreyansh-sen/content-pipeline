@@ -21,6 +21,7 @@ Based on the reference deity image analysis, here's your ready-to-use prompt for
 ANIMATION_PROMPT_TEMPLATE = """# Video Animation Prompt
 
 Convert the provided image into a short, realistic animated video while preserving the original image exactly:
+VIDEO SHOULD NOT HAVE ANY AUDIO
 
 ## Animation Prompt:
 {animation_prompt}

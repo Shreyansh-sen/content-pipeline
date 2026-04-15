@@ -33,6 +33,7 @@ class Config:
     IMAGE_MODEL = os.getenv('IMAGE_MODEL', 'gemini-3.1-flash-image-preview')
     VIDEO_MODEL = os.getenv('VIDEO_MODEL', 'veo-3.1-generate-preview')
     VIDEO_ASPECT_RATIO = os.getenv('VIDEO_ASPECT_RATIO', '9:16')
+    VIDEO_DURATION = int(os.getenv('VIDEO_DURATION', '8'))  # Default to 5 seconds
     
     # PocketBase Configuration
     POCKETBASE_ADMIN_TOKEN = os.getenv('POCKETBASE_ADMIN_TOKEN')

@@ -26,7 +26,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>Parallel Video Generation Progress</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="margin: 0;">Parallel Video Generation Progress</h1>
+            <button id="backBtn" class="back-btn" style="display: none; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">← Back to Pinterest</button>
+        </div>
         <div class="status-container">
             <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
             <div id="statusText">Initializing...</div>
@@ -41,12 +44,25 @@
         const urlParams = new URLSearchParams(window.location.search);
         const batchId = urlParams.get('batch_id');
         let totalVideos = 0;
+        const BACKEND_URL = 'http://localhost:3000';
         
         if (!batchId) {
             document.getElementById('statusText').innerText = "Error: batch_id not provided!";
         } else {
             pollProgress();
         }
+
+        // Back button functionality
+        document.getElementById('backBtn').addEventListener('click', async () => {
+            try {
+                // Call the server to clear state before redirecting
+                await fetch(`${BACKEND_URL}/api/clear-state`, { method: 'POST' });
+            } catch (e) {
+                console.error('Error clearing state:', e);
+            }
+            // Redirect back to Pinterest scraper
+            window.location.href = BACKEND_URL;
+        });
 
         function renderGrid(images) {
             const grid = document.getElementById('imagesGrid');
@@ -123,6 +139,9 @@
 
                     if (data.status !== 'completed' && data.status !== 'error') {
                         setTimeout(pollProgress, 2000);
+                    } else {
+                        // Show back button when generation is complete or errored
+                        document.getElementById('backBtn').style.display = 'block';
                     }
                 } else {
                     document.getElementById('statusText').innerText = "Failed to fetch status.";
