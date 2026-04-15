@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Video Generation</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f6f8; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        .status-container { margin-bottom: 20px; text-align: center; font-size: 1.2em; font-weight: bold; }
+        .progress-bar-bg { width: 100%; background: #eee; border-radius: 4px; overflow: hidden; height: 20px; margin-bottom: 10px; }
+        .progress-bar { width: 0%; height: 100%; background: #667eea; transition: width 0.3s; }
+        
+        .images-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        .image-card { border: 1px solid #ddd; background: #fff; border-radius: 8px; padding: 10px; width: 450px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .image-card h3 { margin: 0; font-size: 16px; text-align: center; }
+        .media-container { display: flex; gap: 10px; justify-content: space-between; align-items: flex-start; }
+        .media-box { flex: 1; text-align: center; }
+        .media-box img, .media-box video { max-width: 100%; height: auto; border-radius: 4px; max-height: 250px; object-fit: contain; }
+        .media-title { font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #555; }
+        .video-list { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+        .video-item { padding: 5px; border: 1px solid #eee; background: #f9f9f9; border-radius: 4px; font-size: 12px; cursor: pointer; text-align: left; }
+        .video-item:hover { background: #e9e9e9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Parallel Video Generation Progress</h1>
+        <div class="status-container">
+            <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
+            <div id="statusText">Initializing...</div>
+        </div>
+
+        <div class="images-grid" id="imagesGrid">
+            <!-- Image cards will be injected here -->
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const batchId = urlParams.get('batch_id');
+        let totalVideos = 0;
+        
+        if (!batchId) {
+            document.getElementById('statusText').innerText = "Error: batch_id not provided!";
+        } else {
+            pollProgress();
+        }
+
+        function renderGrid(images) {
+            const grid = document.getElementById('imagesGrid');
+            if (grid.children.length === 0 && images && images.length > 0) {
+                images.forEach((url, i) => {
+                    const card = document.createElement('div');
+                    card.className = 'image-card';
+                    card.innerHTML = `
+                        <h3>Image ${i + 1}</h3>
+                        <div class="media-container">
+                            <div class="media-box">
+                                <div class="media-title">Referenced Image</div>
+                                <img src="${url}" alt="Pinterest Reference">
+                            </div>
+                            <div class="media-box">
+                                <div class="media-title">Generated Videos</div>
+                                <video id="player-${i}" controls></video>
+                            </div>
+                        </div>
+                        <div class="video-list" id="list-${i}">
+                            <div style="font-size:12px; color:#888;">Videos will appear here as they are generated...</div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        async function pollProgress() {
+            try {
+                const res = await fetch('/batch-progress/' + batchId);
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    renderGrid(data.selected_images);
+
+                    // Update progress
+                    totalVideos = data.total_videos;
+                    let created = data.generated_count || 0;
+                    
+                    if (totalVideos > 0) {
+                        const pct = Math.floor((created / totalVideos) * 100);
+                        document.getElementById('progressBar').style.width = pct + '%';
+                        document.getElementById('statusText').innerText = `Generated ${created} / ${totalVideos} videos (${pct}%) Status: ${data.status}`;
+                    }
+
+                    // Update lists
+                    if (data.videos && data.videos.length > 0) {
+                        data.selected_images.forEach((_, imgIdx) => {
+                            const list = document.getElementById(`list-${imgIdx}`);
+                            const player = document.getElementById(`player-${imgIdx}`);
+                            const imgVideos = data.videos.filter(v => v.image_index === imgIdx);
+                            
+                            if (imgVideos.length > 0 && list) {
+                                list.innerHTML = '';
+                                imgVideos.forEach(v => {
+                                    const path = v.video_url || v.video_path;
+                                    const vItem = document.createElement('div');
+                                    vItem.className = 'video-item';
+                                    vItem.innerText = 'Variant ' + v.variant + ' 🎬';
+                                    vItem.onclick = () => {
+                                        player.src = path;
+                                        player.play();
+                                    };
+                                    list.appendChild(vItem);
+                                });
+                                // auto-load first video if empty
+                                if (!player.src && imgVideos[0]) {
+                                    player.src = imgVideos[0].video_url || imgVideos[0].video_path;
+                                }
+                            }
+                        });
+                    }
+
+                    if (data.status !== 'completed' && data.status !== 'error') {
+                        setTimeout(pollProgress, 2000);
+                    }
+                } else {
+                    document.getElementById('statusText').innerText = "Failed to fetch status.";
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    </script>
+</body>
+</html>

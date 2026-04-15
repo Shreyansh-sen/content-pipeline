@@ -20,34 +20,73 @@ Based on the reference deity image analysis, here's your ready-to-use prompt for
 # Animation prompt template
 ANIMATION_PROMPT_TEMPLATE = """# Video Animation Prompt
 
-Convert your generated image into a stunning animated video using Veo 3.1:
+Convert the provided image into a short, realistic animated video while preserving the original image exactly:
 
 ## Animation Prompt:
 {animation_prompt}
 
-**Motion Physics & Details:**
-1. **Scene Animation**: Animate the entire scene beautifully with graceful, divine movements
-2. **Hair Dynamics**: Apply natural wind effects to hair, flowing and moving fluidly
-3. **Cloth Dynamics**: Scarves, silk garments, and drapery flow with wind motion, creating ethereal movement
-4. **Facial Animation**: 
-   - Eyes blink naturally, opening if initially closed
-   - A gentle, serene smile grows on the face
-5. **Breathing**: Character breathes slowly, with subtle chest and body movements during inhalation/exhalation
-6. **Background Animation**: 
-   - Automatically detect and animate background elements:
-   - Galaxies shimmer and move
-   - Stars twinkle and drift
-   - Cosmic dust shimmers and flows beautifully
-   - God rays pulse and move with divine light
-7. **Foreground Animation**: 
-   - Flowers bloom and sway
-   - Petals float gently
-   - All foreground elements move in harmony with the deity
-8. **Overall Synchronization**: All elements move in perfect correlation with the deity's presence and movements
+Task: Convert the provided image into a short, realistic animated video while preserving the original image exactly.
+Remove any text from the image and do not include it in the animation.
 
-**Duration**: 10-15 seconds
-**Quality**: High-end cinematic quality
-**Style**: Divine, ethereal, spiritual essence preserved"""
+PRIORITY:
+1. Maintain original identity (face, body, composition, proportions)
+2. Maintain original art style, lighting, and colors
+3. Apply only subtle, physically realistic motion
+4. Do not introduce any new elements
+
+SUBJECT (if human present):
+- Keep face perfectly stable and consistent (no distortion or identity drift)
+- Natural blinking at relaxed intervals
+- Very subtle breathing motion in chest (slow, minimal expansion and contraction)
+- Expression remains unchanged or only microscopically softened
+
+HAIR & CLOTHING:
+- Hair moves gently with a light, continuous breeze
+- Motion is soft and slightly varied across strands
+- Loose clothing: minimal edge movement only
+- Tight clothing: no movement
+
+ENVIRONMENT (only if visible in image):
+- Clouds: slow horizontal drift
+- Stars: very soft twinkle or slow rotation
+- Water: gentle ripple with low amplitude
+- Plants/leaves/flowers: slight natural movement with small variation
+
+GLOBAL MOTION SYSTEM:
+- Motion intensity: minimal (micro to subtle only)
+- Speed: slow and smooth
+- Transitions: eased in and out (no sudden starts/stops)
+- Wind: single consistent direction and low intensity
+- All elements respond proportionally to the same wind force
+
+VISUAL STABILITY:
+- No edge flickering
+- No warping or morphing
+- No texture crawling
+- No frame-to-frame inconsistency
+
+CAMERA:
+- Completely static (no zoom, pan, tilt, or shake)
+
+STYLE LOCK:
+- Do not restyle or reinterpret the image
+- Preserve original textures, shading, and color palette exactly
+
+TIMING:
+- Duration: 4–6 seconds
+- Seamless loop (end frame matches start frame)
+
+OUTPUT FEEL:
+- Calm, natural, cinematic, and realistic
+
+NEGATIVE CONSTRAINTS:
+- No added objects or elements
+- No exaggerated motion
+- No lighting changes
+- No camera movement
+- No distortion or deformation
+- No glitches or artifacts
+- No audio"""
 
 ANALYSIS_PROMPT = """
 Analyze this Hindu deity image and return STRICT JSON.

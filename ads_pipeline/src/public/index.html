@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ads Video Extractor</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <section class="hero">
+        <h1>Ads Video Extractor</h1>
+        <p>
+          Paste Facebook Ads Library URL → get unique videos sorted from highest impressions to lowest.
+        </p>
+      </section>
+
+      <section class="search-card">
+        <div class="tabs">
+          <button id="urlTab" class="tab-btn active" data-tab="url-input">Paste URL</button>
+          <button id="filterTab" class="tab-btn" data-tab="filter-input">Use Filters</button>
+        </div>
+
+        <form id="scrapeForm" class="form">
+          <!-- URL Input Tab -->
+          <div id="url-input" class="tab-content active">
+            <label for="adsUrl">Facebook Ads Library URL</label>
+            <input
+              id="adsUrl"
+              name="adsUrl"
+              type="url"
+              placeholder="https://www.facebook.com/ads/library/?..."
+            />
+          </div>
+
+          <!-- Filter Input Tab -->
+          <div id="filter-input" class="tab-content">
+            <label for="libraryId">Library/Page ID</label>
+            <input
+              id="libraryId"
+              name="libraryId"
+              type="text"
+              placeholder="e.g., 160580977144612"
+            />
+
+            <label for="country">Country</label>
+            <select id="country" name="country">
+              <option value="IN">India</option>
+              <option value="US">United States</option>
+              <option value="GB">United Kingdom</option>
+              <option value="AU">Australia</option>
+              <option value="CA">Canada</option>
+            </select>
+
+            <label for="language">Language</label>
+            <select id="language" name="language">
+              <option value="">All Languages</option>
+              <option value="en">English</option>
+              <option value="hi">Hindi</option>
+              <option value="es">Spanish</option>
+              <option value="fr">French</option>
+            </select>
+
+            <label for="platform">Platform</label>
+            <select id="platform" name="platform">
+              <option value="">All Platforms</option>
+              <option value="facebook">Facebook</option>
+              <option value="instagram">Instagram</option>
+              <option value="messenger">Messenger</option>
+              <option value="audience_network">Audience Network</option>
+            </select>
+
+            <label for="mediaType">Media Type</label>
+            <select id="mediaType" name="mediaType">
+              <option value="">All Media Types</option>
+              <option value="video">Video</option>
+              <option value="image">Image</option>
+              <option value="carousel">Carousel</option>
+            </select>
+
+            <label for="activeStatus">Status</label>
+            <select id="activeStatus" name="activeStatus">
+              <option value="active">Active Ads</option>
+              <option value="inactive">Inactive Ads</option>
+              <option value="all">All Status</option>
+            </select>
+          </div>
+
+          <button id="submitBtn" type="submit">Fetch Videos</button>
+        </form>
+        <p id="statusText" class="status"></p>
+      </section>
+
+      <section id="summary" class="summary hidden"></section>
+      <section id="debugInfo" class="debug-info hidden"></section>
+      <section id="results" class="results"></section>
+    </main>
+
+    <script src="/script.js"></script>
+  </body>
+  </html>

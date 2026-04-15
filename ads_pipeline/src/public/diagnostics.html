@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scraper Diagnostics</title>
+    <style>
+      body {
+        font-family: monospace;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        color: #333;
+      }
+      .section {
+        background: white;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 8px;
+        border-left: 4px solid #3b5bfd;
+      }
+      pre {
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 4px;
+        overflow-x: auto;
+        font-size: 12px;
+      }
+      button {
+        background: #3b5bfd;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px 5px 5px 0;
+      }
+      button:hover {
+        background: #2845cc;
+      }
+      .info {
+        background: #e8f4f8;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+      .warning {
+        background: #fff3cd;
+        color: #856404;
+        padding: 10px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔍 Ads Pipeline Diagnostics</h1>
+
+      <div class="section">
+        <h2>Captured GraphQL Payloads</h2>
+        <button onclick="loadPayloads()">Refresh Payloads</button>
+        <button onclick="clearPayloads()">Clear All</button>
+        <div id="payloadList"></div>
+      </div>
+
+      <div class="section">
+        <h2>Metadata Extraction Test</h2>
+        <div class="info">
+          Paste a sample GraphQL response to test metadata extraction
+        </div>
+        <textarea id="samplePayload" rows="10" style="width: 100%; font-family: monospace;" placeholder="{...GraphQL payload...}"></textarea>
+        <br />
+        <button onclick="testExtraction()">Test Extraction</button>
+        <div id="extractionResult"></div>
+      </div>
+
+      <div class="section">
+        <h2>Debug Information</h2>
+        <button onclick="loadDebugInfo()">Load Latest Debug Info</button>
+        <div id="debugInfo"></div>
+      </div>
+    </div>
+
+    <script>
+      async function loadPayloads() {
+        try {
+          const res = await fetch('/api/debug/payloads');
+          const data = await res.json();
+
+          let html = `<p>Total payloads captured: ${data.totalPayloads}</p>`;
+
+          if (data.totalPayloads === 0) {
+            html += '<p class="info">No payloads yet. Run a scrape to capture GraphQL responses.</p>';
+          } else {
+            html += '<ul>';
+            data.payloads.forEach(p => {
+              html += `<li><a href="${p.path}" target="_blank">${p.name}</a></li>`;
+            });
+            html += '</ul>';
+          }
+
+          document.getElementById('payloadList').innerHTML = html;
+        } catch (error) {
+          document.getElementById('payloadList').innerHTML = `<p class="warning">Error: ${error.message}</p>`;
+        }
+      }
+
+      async function clearPayloads() {
+        if (!confirm('Clear all captured payloads?')) return;
+
+        try {
+          await fetch('/api/debug/payloads', { method: 'DELETE' });
+          alert('Payloads cleared');
+          loadPayloads();
+        } catch (error) {
+          alert('Error: ' + error.message);
+        }
+      }
+
+      function testExtraction() {
+        const text = document.getElementById('samplePayload').value.trim();
+        if (!text) {
+          alert('Please paste a GraphQL payload');
+          return;
+        }
+
+        try {
+          const payload = JSON.parse(text);
+          // Simple extraction test
+          const payloadStr = JSON.stringify(payload);
+          const videoMatches = payloadStr.match(/https?:\/\/[^\s"]+\.mp4/g);
+          const impressionMatches = payloadStr.match(/(\d+(?:[.,]\d+)?)\s*([KMB]?)\s*impressions?/gi);
+
+          let result = `<pre>Videos found: ${videoMatches ? videoMatches.length : 0}\n`;
+          result += `Impressions found: ${impressionMatches ? impressionMatches.length : 0}\n\n`;
+          result += 'Sample fields:\n';
+
+          for (const [key, value] of Object.entries(payload).slice(0, 5)) {
+            result += `- ${key}: ${typeof value}\n`;
+          }
+
+          result += '</pre>';
+          document.getElementById('extractionResult').innerHTML = result;
+        } catch (error) {
+          document.getElementById('extractionResult').innerHTML = `<p class="warning">Invalid JSON: ${error.message}</p>`;
+        }
+      }
+
+      async function loadDebugInfo() {
+        document.getElementById('debugInfo').innerHTML = '<p>Loading...</p>';
+        // To be implemented - load from last successful scrape
+        document.getElementById('debugInfo').innerHTML = '<p class="info">Open browser DevTools Console after a scrape to see detailed debug logs</p>';
+      }
+
+      // Load on page load
+      loadPayloads();
+    </script>
+  </body>
+</html>

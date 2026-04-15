@@ -1,5 +1,6 @@
 import os
 import time
+import mimetypes
 from typing import Dict, Optional
 from config.settings import Config
 from google import genai
@@ -33,24 +34,44 @@ class VeoService:
                 f"divine ethereal quality. Video duration: {duration} seconds."
             )
             
-            # Prepare inputs: Veo takes a list if there is an image, or a string if just text
+            # Prepare inputs: Veo takes image parameter if available
             gen_prompt = refined_prompt
+            image_input = None
+            
             if image_path and os.path.exists(image_path):
                 try:
-                    uploaded_file = self.client.files.upload(path=image_path)
-                    gen_prompt = [uploaded_file, refined_prompt]
-                    print(f"DEBUG - Uploaded reference image: {uploaded_file.name}")
+                    import mimetypes
+                    # Determine MIME type from file extension
+                    mime_type, _ = mimetypes.guess_type(image_path)
+                    if not mime_type:
+                        mime_type = "image/jpeg"  # Default to JPEG if type cannot be determined
+                    
+                    with open(image_path, "rb") as image_file:
+                        image_data = image_file.read()
+                    
+                    image_input = types.Image(
+                        image_bytes=image_data,
+                        mime_type=mime_type
+                    )
+                    print(f"DEBUG - Image loaded successfully using types.Image: {mime_type}")
                 except Exception as e:
-                    print(f"DEBUG - Warning: Reference image upload failed: {e}")
+                    print(f"DEBUG - Warning: Reference image loading failed: {e}")
 
             # Start the generation operation
-            operation = self.client.models.generate_videos(
-                model=self.model,
-                prompt=gen_prompt,
-                config=types.GenerateVideosConfig(
+            generate_kwargs = {
+                "model": self.model,
+                "prompt": gen_prompt,
+                "config": types.GenerateVideosConfig(
                     aspect_ratio=self.aspect_ratio,
+                    number_of_videos=1,
                 ),
-            )
+            }
+            
+            # Add image parameter if available
+            if image_input:
+                generate_kwargs["image"] = image_input
+            
+            operation = self.client.models.generate_videos(**generate_kwargs)
 
             print("Waiting for video generation to complete...")
             # Poll the operation until done
@@ -58,13 +79,21 @@ class VeoService:
                 time.sleep(10)
                 operation = self.client.operations.get(operation)
 
+            if operation.error:
+                raise Exception(f"Video generation failed: {operation.error}")
+
+            if not operation.response and not operation.result:
+                raise Exception(f"No response or result in operation: {operation}")
+
+            response = operation.response or operation.result
+
             # Retrieve the generated video object
-            generated_video = operation.response.generated_videos[0]
+            generated_video = response.generated_videos[0]
             
             # Define output paths
             output_filename = f"gen_video_{int(time.time())}.mp4"
-            output_path = os.path.join(Config.GENERATED_VIDEO_FOLDER, output_filename)
-            os.makedirs(Config.GENERATED_VIDEO_FOLDER, exist_ok=True)
+            output_path = os.path.join(Config.UPLOAD_FOLDER, output_filename)
+            os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
             
             # Download and save the video
             # Note: The SDK download method prepares the file, .save() writes it to disk
@@ -75,7 +104,7 @@ class VeoService:
             
             return {
                 "success": True,
-                "video_url": f"/generated-videos/{output_filename}",
+                "video_url": f"/uploads/{os.path.basename(output_path)}",
                 "video_path": output_path,
                 "status": "completed",
                 "duration": duration,
