@@ -64,6 +64,7 @@ class VeoService:
                 "config": types.GenerateVideosConfig(
                     aspect_ratio=self.aspect_ratio,
                     number_of_videos=1,
+                    include_audio=False,
                 ),
             }
             
