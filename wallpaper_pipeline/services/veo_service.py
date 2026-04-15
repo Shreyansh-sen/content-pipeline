@@ -1,6 +1,7 @@
 import os
 import time
 import mimetypes
+import subprocess
 from typing import Dict, Optional
 from config.settings import Config
 from google import genai
@@ -15,6 +16,46 @@ class VeoService:
         self.model = Config.VIDEO_MODEL
         self.video_duration = Config.VIDEO_DURATION
         self.aspect_ratio = Config.VIDEO_ASPECT_RATIO
+    
+    def _remove_audio_from_video(self, video_path: str) -> bool:
+        """
+        Remove audio from video file using ffmpeg
+        Returns True if successful, False otherwise
+        """
+        try:
+            # Create a temporary output file
+            temp_output = video_path.replace('.mp4', '_no_audio.mp4')
+            
+            # Run ffmpeg command to remove audio
+            command = [
+                'ffmpeg',
+                '-i', video_path,
+                '-c:v', 'copy',  # Copy video codec without re-encoding
+                '-an',  # Remove audio
+                '-y',  # Overwrite output file
+                temp_output
+            ]
+            
+            result = subprocess.run(command, capture_output=True, text=True, timeout=300)
+            
+            if result.returncode == 0:
+                # Replace original with audio-removed version
+                os.replace(temp_output, video_path)
+                print(f"DEBUG - Audio removed from video: {video_path}")
+                return True
+            else:
+                print(f"DEBUG - ffmpeg failed: {result.stderr}")
+                return False
+                
+        except FileNotFoundError:
+            print("DEBUG - ffmpeg not found. Ensure ffmpeg is installed on the system.")
+            return False
+        except subprocess.TimeoutExpired:
+            print("DEBUG - ffmpeg command timed out")
+            return False
+        except Exception as e:
+            print(f"DEBUG - Error removing audio: {e}")
+            return False
         
     def generate_video_from_prompt(
         self, 
@@ -64,7 +105,7 @@ class VeoService:
                 "config": types.GenerateVideosConfig(
                     aspect_ratio=self.aspect_ratio,
                     number_of_videos=1,
-                    include_audio=False,
+                    
                 ),
             }
             
@@ -103,6 +144,9 @@ class VeoService:
             
             print(f"Generated video saved to {output_path}")
             
+            # Remove audio from the generated video
+            audio_removed = self._remove_audio_from_video(output_path)
+            
             return {
                 "success": True,
                 "video_url": f"/uploads/{os.path.basename(output_path)}",
@@ -110,7 +154,8 @@ class VeoService:
                 "status": "completed",
                 "duration": duration,
                 "has_audio": False,
-                "message": "Video generated successfully"
+                "audio_removed_successfully": audio_removed,
+                "message": "Video generated successfully without audio"
             }
                 
         except Exception as e:
