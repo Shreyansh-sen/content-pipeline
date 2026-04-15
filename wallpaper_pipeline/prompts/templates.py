@@ -34,6 +34,8 @@ PRIORITY:
 2. Maintain original art style, lighting, and colors
 3. Apply only subtle, physically realistic motion
 4. Do not introduce any new elements
+5.Convert the provided image into a short, realistic animated video while preserving the original image exactly
+6.VIDEO SHOULD NOT HAVE ANY AUDIO OR ANY SOUND.IT SHOULD BE COMPLETELY SILENT.
 
 SUBJECT (if human present):
 - Keep face perfectly stable and consistent (no distortion or identity drift)
