@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: wallpaper-pipeline
+    runtime: python-3
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: FLASK_PORT
+        value: 2000
+      - key: FLASK_ENV
+        value: production
